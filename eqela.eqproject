@@ -1,0 +1,9 @@
+
+#
+# Project configuration file for
+# BouncingImage
+#
+
+projectname: BouncingImage
+vendorid: com.sirMiggy
+mainmodule: com.sirMiggy.bouncingimage
