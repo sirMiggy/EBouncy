@@ -8,20 +8,30 @@ public class Main: SEScene
 {
 	SESprite bg;
 	SESprite fg;
-	SEImage img;
+	SESprite text;
+	SESprite myrect;
+
+	
+	int speed = 100;
+	int rectspeed = 180;
+	int bounce = 0;
+	
+	double rotation = 0;
+
+	String display;
+
+
 	bool directlr = true;
 	bool directtb = true;
-	int speed = 100;
-	double rotation = 0;
-	SESprite text;
-	String display;
-	int bounce = 0;
+	bool gameover;
 	
 	public void initialize(SEResourceCache rsc)
 	{
 		base.initialize(rsc);
-		img.for_resource("app");
 		
+		gameover = false;
+		directtb = true;
+			
 		bg= add_sprite_for_color(Color.instance("lightgreen"),get_scene_width(),get_scene_height());
 		bg.move(0,0);
 
@@ -29,6 +39,9 @@ public class Main: SEScene
 		fg= add_sprite_for_image(SEImage.for_resource("img"));//add_sprite_for_color(Color.instance("white"),get_scene_width()*0.1,get_scene_height()*0.1); ////
 		fg.move(100,100);
 
+		rsc.prepare_image("myrect","yellow-rectangle",get_scene_width()*0.25,get_scene_height()*0.1);
+		myrect = add_sprite_for_image(SEImage.for_resource("myrect"));
+		myrect.move(get_scene_width()/2-myrect.get_width(),get_scene_height()-myrect.get_height()*1.3);
 	
 		rsc.prepare_font("myfont","arial bold color=white",100);
 		display = "BOUNCE = %d".printf().add(Primitive.for_integer(bounce)).to_string();
@@ -38,6 +51,9 @@ public class Main: SEScene
 	
 	}
 	public void update(TimeVal now,double delta) {
+
+	display = "BOUNCE = %d".printf().add(Primitive.for_integer(bounce)).to_string();
+
 	rotation+=MathConstant.M_PI_4/2;
 	fg.set_rotation(rotation);
 	speed+=50;
@@ -65,11 +81,11 @@ public class Main: SEScene
 
 		if(directtb) {
 			 if( fg.get_y()+fg.get_height() > get_scene_height() ) {
-				directtb = false;
+//				directtb = false;
 				speed=100;
-				bounce++;
-				text.set_text(display);
-			
+//				bounce++;
+				text.set_text("Game Over");
+				gameover=true;
 			}
 				fg.move(fg.get_x(),fg.get_y()+delta*speed);
 		}
@@ -82,8 +98,31 @@ public class Main: SEScene
 			}
 			fg.move(fg.get_x(),fg.get_y()-delta*speed);	
 		}
+		
+			//Controllers
+			if(is_key_pressed("left")) {
+				rectspeed += 60;
+				myrect.move(myrect.get_x()-delta*rectspeed,myrect.get_y());
+			}
+			else if(is_key_pressed("right")) {
+				rectspeed += 60;				
+				myrect.move(myrect.get_x()+delta*rectspeed,myrect.get_y());
+			}
+			else{
+				rectspeed = 180;
+			}
+		//Rect Bounce
+		if(myrect.get_x()<=fg.get_x()+fg.get_width() && myrect.get_x()+myrect.get_width()>=fg.get_x()+fg.get_width()
+			&& myrect.get_y()<=fg.get_y()+fg.get_height() && myrect.get_y()+myrect.get_height()>=fg.get_y()+fg.get_height()) {
+				directtb = false;
+				bounce++;
+		}
 
-		display = "BOUNCE = %d".printf().add(Primitive.for_integer(bounce)).to_string();
+		//Game Loop Eval
+		if(gameover && is_key_pressed("space")) {
+			Log.message("Gameover and Space is pressed");
+			base.cleanup();
+		}
 	}
 
 	public void set_rotation(double angle) {
@@ -92,5 +131,12 @@ public class Main: SEScene
 
 	public double get_rotation() {
 		return(rotation);
+	}
+
+	public void on_key_press(String name, String str){
+		base.on_key_press(name,str);
+	}
+	public void on_key_release(String name, String str){
+		base.on_key_release(name,str);
 	}
 }
